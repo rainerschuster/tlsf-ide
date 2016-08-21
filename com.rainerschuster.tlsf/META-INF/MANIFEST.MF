@@ -1,0 +1,29 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: com.rainerschuster.tlsf
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: com.rainerschuster.tlsf; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib,
+ org.antlr.runtime,
+ org.eclipse.xtext.util,
+ org.eclipse.xtend.lib,
+ org.eclipse.emf.common
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: com.rainerschuster.tlsf.tLSF,
+ com.rainerschuster.tlsf.serializer,
+ com.rainerschuster.tlsf.parser.antlr.internal,
+ com.rainerschuster.tlsf.tLSF.util,
+ com.rainerschuster.tlsf.tLSF.impl,
+ com.rainerschuster.tlsf.scoping,
+ com.rainerschuster.tlsf.validation,
+ com.rainerschuster.tlsf.services,
+ com.rainerschuster.tlsf,
+ com.rainerschuster.tlsf.parser.antlr,
+ com.rainerschuster.tlsf.generator
+Import-Package: org.apache.log4j

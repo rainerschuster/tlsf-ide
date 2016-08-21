@@ -1,0 +1,361 @@
+grammar com.rainerschuster.tlsf.TLSF with org.eclipse.xtext.common.Terminals
+
+generate tLSF "http://www.rainerschuster.com/tlsf/TLSF"
+
+// TODO Fix unary precedence
+
+Model:
+	info=Info
+	global=Global?
+	main=Main
+;
+
+Info:
+	'INFO' '{'
+	'TITLE' ':' title=STRING
+	'DESCRIPTION' ':' description=STRING
+	'SEMANTICS' ':' semantics=Semantics
+	'TARGET' ':' target=Target
+	('TAGS' ':' tags+=ID (',' tags+=ID)*)?
+	'}'
+;
+
+Target:
+	moore?='Moore'
+	| mealy?='Mealy'
+;
+
+Semantics:
+	moore?='Moore' (',' strict?='Strict')?
+	| mealy?='Mealy' (',' strict?='Strict')?
+;
+
+Main:
+	{Main}'MAIN' '{'
+	sections+=(
+		InputsSection
+		| OutputsSection
+		| InitiallySection
+		| PresetSection
+		| RequireSection
+		| AssertSection
+		| AssumeSection
+		| GuaranteeSection
+	)+
+	'}'
+;
+
+InputsSection:
+	{InputsSection}'INPUTS' '{' (inputs+=SignalDeclaration ';')* '}'
+;
+
+OutputsSection:
+	{OutputsSection}'OUTPUTS' '{' (outputs+=SignalDeclaration ';')* '}'
+;
+
+InitiallySection:
+	{InitiallySection}'INITIALLY' '{' (initiallys+=LtlExpression ';')* '}'
+;
+
+PresetSection:
+	{PresetSection}'PRESET' '{' (presets+=LtlExpression ';')* '}'
+;
+
+RequireSection:
+	{RequireSection}'REQUIRE' '{' (requires+=LtlExpression ';')* '}'
+;
+
+AssertSection:
+	{AssertSection}('ASSERT' | deprecatedInvariants?='INVARIANTS') '{' (asserts+=LtlExpression ';')* '}'
+;
+
+AssumeSection:
+	{AssumeSection}('ASSUME' | deprecatedAssumptions?='ASSUMPTIONS') '{' (assumes+=LtlExpression ';')* '}'
+;
+
+GuaranteeSection:
+	{GuaranteeSection}('GUARANTEE' | deprecatedGuarantees?='GUARANTEES') '{' (guarantees+=LtlExpression ';')* '}'
+;
+
+LtlExpression returns Expression:
+	Expression
+;
+
+PrimaryExpression returns Expression:
+	Literal
+	| ParenthesizedExpression
+;
+
+Literal returns Expression:
+	BooleanLiteral
+	| IntLiteral
+	| SetLiteral
+	| {ReferenceLiteral} ref=[IdentifiableElement|ID]
+;
+
+IdentifiableElement:
+	SignalDeclaration
+	| Parameter
+	| Definition
+	| Argument
+	| EnumerationElement
+	| RangeExpression
+;
+
+BooleanLiteral returns Expression:
+	{BooleanLiteral} ('false' | isTrue?='true');
+
+IntLiteral returns Expression:
+	{IntLiteral} value=INT;
+
+SetLiteral returns Expression:
+	{SetLiteral} '{' (values+=Expression (',' values+=Expression)*)? '}';
+
+ParenthesizedExpression returns Expression:
+	'(' Expression ')';
+
+Global:
+	{Global}'GLOBAL' '{'
+		('PARAMETERS' '{'
+			(parameters+=Parameter ';')*
+		'}')?
+		('DEFINITIONS' '{'
+			(definitions+=Definition ';')*
+		'}')?
+	'}'
+;
+
+Definition:
+	FunctionDeclaration
+	| EnumerationDeclaration
+	| name=ID '=' expression=Expression
+;
+
+Parameter:
+	name=ID '=' expression=Expression
+;
+
+// TODO Level 11 unary expressions!
+
+Expression returns Expression:
+	GuardExpression
+;
+
+GuardExpression returns Expression:
+	(otherwise?='otherwise' | PatternMatchExpression) ({GuardExpression.left=current} op=OpGuard right=PatternMatchExpression)*;
+
+OpGuard:
+	':';
+
+PatternMatchExpression returns Expression:
+	ReleaseExpression ({PatternMatchExpression.left=current} op=OpPatternMatch right=ReleaseExpression)*;
+
+OpPatternMatch:
+	'~';
+
+ReleaseExpression returns Expression:
+	UntilExpression ({ReleaseExpression.left=current} op=OpRelease right=UntilExpression)*;
+
+OpRelease:
+	'R';
+
+UntilExpression returns Expression:
+	WeakUntilExpression ({UntilExpression.left=current} op=OpUntil right=UntilExpression)?;
+
+OpUntil:
+	'U';
+
+WeakUntilExpression returns Expression:
+	ImplEquivExpression ({WeakUntilExpression.left=current} op=OpWeakUntil right=WeakUntilExpression)?;
+
+OpWeakUntil:
+	'W';
+
+ImplEquivExpression returns Expression:
+	DisjunctiveExpression ({ImplEquivExpression.left=current} op=OpImplEquiv right=ImplEquivExpression)?;
+
+OpImplEquiv:
+	'->' | 'IMPLIES' | '<->' | 'EQUIV';
+
+DisjunctiveExpression returns Expression:
+	ConjunctiveExpression ({DisjunctiveExpression.left=current} op=OpDisjunctive right=ConjunctiveExpression)*;
+
+OpDisjunctive:
+	'||' | 'OR' /*| 'EXISTS'*/;
+
+ConjunctiveExpression returns Expression:
+	MembershipExpression ({ConjunctiveExpression.left=current} op=OpConjunctive right=MembershipExpression)*;
+
+OpConjunctive:
+	'&&' | 'AND' /*| 'FORALL'*/;
+
+MembershipExpression returns Expression:
+	RelationalExpression ({MembershipExpression.left=current} op=OpMembership right=RelationalExpression)*;
+
+OpMembership:
+	'IN' | 'ELEM' | '<-';
+
+RelationalExpression returns Expression:
+	SetUnionExpression ({RelationalExpression.left=current} op=OpRelational right=SetUnionExpression)*;
+
+OpRelational:
+	'==' | 'EQ' | '!=' | '/=' | 'NEQ' | '<' | 'LE' | '<=' | 'LEQ' | '>' | 'GE' | '>=' | 'GEQ';
+
+SetUnionExpression returns Expression:
+	SetIntersectionExpression ({SetUnionExpression.left=current} op=OpSetUnion right=SetIntersectionExpression)*;
+
+OpSetUnion:
+	'(+)' | 'CUP';
+
+SetIntersectionExpression returns Expression:
+	SetDifferenceExpression ({SetIntersectionExpression.left=current} op=OpSetIntersection right=SetDifferenceExpression)*;
+
+OpSetIntersection:
+	'(*)' | 'CAP';
+
+SetDifferenceExpression returns Expression:
+	AdditiveExpression ({SetDifferenceExpression.left=current} op=OpSetDifference right=SetDifferenceExpression)?;
+
+OpSetDifference:
+	'(\\)' | '(-)' | 'SETMINUS';
+
+AdditiveExpression returns Expression:
+	DivisionExpression ({AdditiveExpression.left=current} op=OpAdditive right=DivisionExpression)*;
+
+OpAdditive:
+	'+' | 'PLUS' | '-' | 'MINUS';
+
+DivisionExpression returns Expression:
+	MultiplicativeExpression ({DivisionExpression.left=current} op=OpDivision right=DivisionExpression)?;
+
+OpDivision:
+	'/' | 'DIV' | '%' | 'MOD';
+
+MultiplicativeExpression returns Expression:
+	UnaryExpression ({MultiplicativeExpression.left=current} op=OpMultiplicative right=UnaryExpression)*;
+
+OpMultiplicative:
+	'*' | 'MUL';
+
+
+UnaryExpression returns Expression:
+	(UnaryExpression1
+		| UnaryExpression5
+		| UnaryExpression11) //operand=MemberFeatureCall
+	| MemberFeatureCall
+;
+
+// TODO Fix this!
+MemberFeatureCall returns Expression:
+	PrimaryExpression
+	(
+			=>({MemberFeatureCall.memberCallTarget=current}(('('
+				(
+				    /*memberCallArguments+=UnaryExpression
+				  |	*/memberCallArguments+=Expression (',' memberCallArguments+=Expression)*
+				)? 
+			')')
+			| ('[' arrayIndex=Expression ']')))
+		)?/***/;
+
+
+
+// TODO Alignment!
+UnaryExpression11 returns Expression:
+	op='!' subExpression=Expression
+	| op='NOT' subExpression=Expression
+	| op='X' subExpression=Expression
+	| op='F' subExpression=Expression
+	| op='G' subExpression=Expression
+	| op=OpConjunctive '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op='FORALL' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op=OpDisjunctive '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op='EXISTS' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+;
+UnaryExpression5 returns Expression:
+	op=OpSetIntersection '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op=OpSetUnion '[' rangesExpression=RangesExpression ']' subExpression=Expression
+;
+UnaryExpression1 returns Expression:
+	op='+' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op='SUM' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op='*' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| op='PROD' '[' rangesExpression=RangesExpression ']' subExpression=Expression
+	| '|' subExpression=Expression '|'
+	| op='SIZE' subExpression=Expression
+	| op='MIN' subExpression=Expression
+	| op='MAX' subExpression=Expression
+	| op='SIZEOF' subExpression=Expression
+;
+
+RangesExpression returns Expression:
+	ranges+=RangeExpression (',' ranges+=RangeExpression)*
+;
+
+//RangeExpression returns Expression:
+//	MembershipExpression
+//	| ShortRangeExpression
+//;
+
+//ShortRangeExpression returns Expression:
+//	a=Expression opA=OpRelational name=ID opB=OpRelational b=Expression
+//;
+//
+//RangeExpression returns Expression:
+//	MembershipExpression
+//	({RangeExpression.leftExpression=current} =>rest=RangeExpressionRest)?
+////	(=> ({RangeExpression.leftExpression=current} opA=OpRelational) name=ID opB=OpRelational rightExpression=Expression)?
+//;
+
+RangeExpression:
+	leftExpression=SetUnionExpression opA=OpRelational name=ID opB=OpRelational rightExpression=SetUnionExpression
+;
+
+//RangeExpressionRest:
+//	opA=OpRelational name=ID opB=OpRelational rightExpression=Expression
+//;
+
+
+
+
+// 4.4 Enumerations
+
+EnumerationDeclaration:
+	'enum' name=ID '=' elements+=EnumerationElement+
+;
+
+EnumerationElement:
+	name=ID ':' values+=EnumerationValue (',' values+=EnumerationValue)*
+;
+
+EnumerationValue:
+	(/*'0'|'1'|*/'*'|INT)+
+;
+
+// 4.5 Signals and Buses
+
+SignalDeclaration:
+	name=ID
+	| name=ID '[' width=Expression ']'
+	| enumType=[EnumerationDeclaration|ID] name=ID
+;
+
+// 4.6 Function Declarations
+
+FunctionDeclaration:
+	name=ID '(' arguments+=Argument (',' arguments+=Argument)* ')' '=' expressions+=Expression+
+;
+
+Argument:
+	name=ID
+;
+
+// TODO 4.7 Big Operator Notation
+// TODO 4.8 Syntactic Sugar
+
+
+terminal ID:
+	('a'..'z'|'A'..'Z'|'_'|'@') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|"'"|'@')*;
+
+terminal STRING	: 
+	'"' ( '\\' . /* 'b'|'t'|'n'|'f'|'r'|'u'|'"'|"'"|'\\' */ | !('\\'|'"') )* '"';

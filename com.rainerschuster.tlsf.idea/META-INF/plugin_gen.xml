@@ -1,0 +1,93 @@
+<idea-plugin version="2">
+	<extensions defaultExtensionNs="org.eclipse.xtext.idea">
+		<package
+			uri="http://www.rainerschuster.com/tlsf/TLSF"
+			class="com.rainerschuster.tlsf.tLSF.TLSFPackage"
+		/>
+		<resourceFactory 
+			type="tlsf"
+			class="org.eclipse.xtext.resource.IResourceFactory"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+		/>
+		<resourceServiceProvider
+			uriExtension="tlsf"
+			class="org.eclipse.xtext.idea.resource.IResourceIdeaServiceProvider"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+		/>
+
+		<lang.setup
+			language="com.rainerschuster.tlsf.TLSF"
+			implementationClass="com.rainerschuster.tlsf.idea.TLSFIdeaSetup"
+		/>
+	</extensions>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<psi.treeChangePreprocessor implementation="com.rainerschuster.tlsf.idea.lang.psi.TLSFCodeBlockModificationListener"/>
+
+		<fileTypeFactory implementation="com.rainerschuster.tlsf.idea.lang.TLSFFileTypeFactory"/>
+		<stubElementTypeHolder class="com.rainerschuster.tlsf.idea.lang.TLSFElementTypeProvider"/>
+		<lang.ast.factory 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.lang.BaseXtextASTFactory"
+		/>
+		<lang.parserDefinition 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.rainerschuster.tlsf.idea.lang.parser.TLSFParserDefinition"
+		/>
+		<lang.findUsagesProvider 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.findusages.BaseXtextFindUsageProvider"
+		/>
+		<lang.refactoringSupport 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.refactoring.BaseXtextRefactoringSupportProvider"
+		/>
+		<lang.namesValidator 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.intellij.lang.refactoring.NamesValidator"
+		/>
+		<lang.syntaxHighlighterFactory key="com.rainerschuster.tlsf.TLSF" implementationClass="com.rainerschuster.tlsf.idea.highlighting.TLSFSyntaxHighlighterFactory" />
+		<lang.braceMatcher 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.intellij.lang.PairedBraceMatcher"
+		/>
+		<annotator 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.annotation.IssueAnnotator"
+		/>
+		<completion.contributor language="com.rainerschuster.tlsf.TLSF" implementationClass="com.rainerschuster.tlsf.idea.completion.TLSFCompletionContributor"/>
+		<pom.declarationSearcher implementation="com.rainerschuster.tlsf.idea.lang.pom.TLSFPomDeclarationSearcher"/>
+
+		<lang.psiStructureViewFactory 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.intellij.lang.PsiStructureViewFactory"
+		/>
+		<facetType implementation="com.rainerschuster.tlsf.idea.facet.TLSFFacetType"/>
+		<lang.documentationProvider 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="org.eclipse.xtext.idea.documentation.IdeaDocumentationProvider"
+		/>
+		<colorSettingsPage implementation="com.rainerschuster.tlsf.idea.highlighting.TLSFColorSettingsPage"/>
+		<highlightVisitor implementation="com.rainerschuster.tlsf.idea.highlighting.TLSFSemanticHighlightVisitor"/>
+
+		<lang.formatter 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.intellij.formatting.FormattingModelBuilder"
+		/>
+		<lang.commenter 
+			language="com.rainerschuster.tlsf.TLSF"
+			factoryClass="com.rainerschuster.tlsf.idea.TLSFExtensionFactory"
+			implementationClass="com.intellij.lang.CodeDocumentationAwareCommenter"
+		/>
+	</extensions>
+</idea-plugin>

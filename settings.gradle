@@ -1,0 +1,5 @@
+include 'com.rainerschuster.tlsf'
+include 'com.rainerschuster.tlsf.ide'
+include 'com.rainerschuster.tlsf.idea'
+include 'com.rainerschuster.tlsf.web'
+include 'com.rainerschuster.tlsf.tests'

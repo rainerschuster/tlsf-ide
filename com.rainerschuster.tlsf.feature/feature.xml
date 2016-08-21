@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="com.rainerschuster.tlsf.feature"
+	label="TLSF Feature "
+	version="1.0.0.qualifier">
+	<plugin
+			id="com.rainerschuster.tlsf"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="com.rainerschuster.tlsf.ide"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+	<plugin
+			id="com.rainerschuster.tlsf.ui"
+			download-size="0"
+			install-size="0"
+			version="0.0.0"
+			unpack="false"/>
+</feature>
